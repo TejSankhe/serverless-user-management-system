@@ -1,0 +1,64 @@
+version: 2 # use CircleCI 2.0
+jobs: # a collection of steps
+  build:
+    docker:
+      - image: circleci/openjdk:8-jdk-stretch
+    steps:
+      - checkout
+      - run:
+          name: Install packages
+          command: |
+            sudo apt-get update && sudo apt-get install wget zip unzip python-pip python-dev build-essential -y
+            python --version
+      - run:
+          name: Install awscli
+          command: sudo pip install awscli
+      - run:
+          name: Build Artifact
+          command: |
+            ls -al
+            echo "Building the artifact with Maven"
+            mvn clean install
+            cd target
+            ls -al
+            cd ../..
+      - run:
+          name: Copy Artifact
+          command: |
+            echo "current build number is ${CIRCLE_BUILD_NUM}"
+            pwd
+            echo "current directory content"
+            ls -al
+            echo "Making the codedeploy_artifact directory"
+            mkdir -p codedeploy_artifact
+            echo "Changing directory to codedeploy_artifact"
+            cd codedeploy_artifact
+            echo "Copying the jar file from ../target/lambda-0.0.1-SNAPSHOT.jar to the codedeploy_artifact"
+            cp ../target/lambda-0.0.1-SNAPSHOT.jar .
+            echo "current directory content"
+            ls -al
+            echo "Changing directory to root"
+            cd ..
+            pwd
+            ls -al
+      - run:
+          name: Upload Artifact to S3
+          command: |
+            echo "Uploading Artifact to S3 bucket ${CODE_DEPLOY_S3_BUCKET}"
+            aws s3 cp --recursive codedeploy_artifact s3://${CODE_DEPLOY_S3_BUCKET}
+            cd ..
+      - run:
+          name: Update lambda function
+          command: |
+            aws lambda update-function-code --function-name  SendEmail  --s3-bucket ${CODE_DEPLOY_S3_BUCKET} --s3-key lambda-0.0.1-SNAPSHOT.jar --region ${AWS_REGION}"
+
+
+workflows:
+  version: 2
+  build_deploy_lambda-workflow:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only:
+                - master
