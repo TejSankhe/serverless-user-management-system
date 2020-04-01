@@ -45,7 +45,7 @@ jobs: # a collection of steps
           name: Upload Artifact to S3
           command: |
             echo "Uploading Artifact to S3 bucket ${CODE_DEPLOY_S3_BUCKET}"
-            aws s3 cp --recursive codedeploy_artifact s3://${CODE_DEPLOY_S3_BUCKET}
+            aws s3 cp lambda-0.0.1-SNAPSHOT.jar s3://${CODE_DEPLOY_S3_BUCKET}
             cd ..
       - run:
           name: Update lambda function
