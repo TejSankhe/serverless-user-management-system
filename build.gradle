@@ -1,0 +1,41 @@
+plugins {
+    id 'java'
+}
+
+group 'com'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+
+dependencies {
+    compile(
+            'com.amazonaws:aws-lambda-java-core:+',
+            'com.amazonaws:aws-java-sdk-ses:+',
+            'com.amazonaws:aws-lambda-java-events:+',
+            'com.amazonaws:aws-java-sdk-dynamodb:+'
+    )
+
+    compile group: 'com.amazonaws', name: 'aws-java-sdk-dynamodb', version: '1.11.525'
+    compile group: 'com.amazonaws', name: 'aws-java-sdk-ses', version: '1.11.525'
+    
+
+}
+
+task buildLambdaZip(type: Zip) {
+    from compileJava
+    from processResources
+    into('lib') {
+        from configurations.runtime
+    }
+}
+
+build.dependsOn buildLambdaZip

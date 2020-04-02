@@ -1,8 +1,8 @@
-version: 2 # use CircleCI 2.0
-jobs: # a collection of steps
+version: 2
+jobs:
   build:
     docker:
-      - image: circleci/openjdk:8-jdk-stretch
+      - image: circleci/openjdk:8-jdk
     steps:
       - checkout
       - run:
@@ -16,43 +16,17 @@ jobs: # a collection of steps
       - run:
           name: Build Artifact
           command: |
-            ls -al
-            echo "Building the artifact with Maven"
-            mvn clean install
-            cd target
-            ls -al
-            cd ../..
-      - run:
-          name: Copy Artifact
-          command: |
-            echo "current build number is ${CIRCLE_BUILD_NUM}"
-            pwd
-            echo "current directory content"
-            ls -al
-            echo "Making the codedeploy_artifact directory"
-            mkdir -p codedeploy_artifact
-            echo "Changing directory to codedeploy_artifact"
-            cd codedeploy_artifact
-            echo "Copying the jar file from ../target/lambda-0.0.1-SNAPSHOT.jar to the codedeploy_artifact"
-            cp ../target/lambda-0.0.1-SNAPSHOT.jar .
-            echo "current directory content"
-            ls -al
-            echo "Changing directory to root"
-            cd ..
             pwd
             ls -al
+            gradle buildLambdaZip
+            cd build/distributions
+            pwd
+            ls -al
+            cd ../../..
       - run:
-          name: Upload Artifact to S3
+          name: Update zip in lambda function
           command: |
-            echo "Uploading Artifact to S3 bucket ${CODE_DEPLOY_S3_BUCKET}"
-            cd codedeploy_artifact
-            aws s3 cp lambda-0.0.1-SNAPSHOT.jar s3://${CODE_DEPLOY_S3_BUCKET}
-            cd ..
-      - run:
-          name: Update lambda function
-          command: |
-            aws lambda update-function-code --function-name  SendEmail  --s3-bucket ${CODE_DEPLOY_S3_BUCKET} --s3-key lambda-0.0.1-SNAPSHOT.jar --region ${AWS_REGION}
-
+            aws lambda update-function-code --region=${AWS_REGION} --function-name=SendEmail  --zip-file fileb://build/distributions/lambda-1.0-SNAPSHOT.zip
 
 workflows:
   version: 2
