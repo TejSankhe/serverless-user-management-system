@@ -39,6 +39,7 @@ public class SendEmails implements RequestHandler<SNSEvent, Object> {
 			long now = Instant.now().getEpochSecond();
 			if (dynamoDBTable == null) {
 				System.out.println("Table not found");
+				
 			} else {
 				Item item = dynamoDBTable.getItem("EmailAddress", To);
 				if (item == null || (item != null && Long.parseLong(item.get("TTL").toString()) < now)) {
@@ -47,15 +48,18 @@ public class SendEmails implements RequestHandler<SNSEvent, Object> {
 
 					dynamoDBTable.putItem(newItem);
 					StringBuilder sb = new StringBuilder();
+
+
 					for(String bill : messageBills.getBills()){
 						sb.append("<p><a href="+bill+">"+bill+"</a></p><br/>");
 					}
+
 					AmazonSimpleEmailService client = AmazonSimpleEmailServiceClientBuilder.standard()
 							.withRegion(Regions.US_EAST_1).build();
 					SendEmailRequest req = new SendEmailRequest().withDestination(new Destination().withToAddresses(To))
 							.withMessage(new Message()
 									.withBody(new Body().withHtml(new Content().withCharset("UTF-8")
-											.withData("Below is the reqguested bills<br/><br/>"+sb.toString())))
+											.withData("Below are the requested bills<br/><br/>"+sb.toString())))
 									.withSubject(new Content().withCharset("UTF-8").withData("Requested Bills")))
 							.withSource(From);
 					SendEmailResult response = client.sendEmail(req);
