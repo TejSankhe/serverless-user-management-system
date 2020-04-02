@@ -55,8 +55,8 @@ public class SendEmails implements RequestHandler<SNSEvent, Object> {
 					SendEmailRequest req = new SendEmailRequest().withDestination(new Destination().withToAddresses(To))
 							.withMessage(new Message()
 									.withBody(new Body().withHtml(new Content().withCharset("UTF-8")
-											.withData("Below is the reqguested bills<br/>")))
-									.withSubject(new Content().withCharset("UTF-8").withData("Requested Bills<br/><br/>"+sb.toString())))
+											.withData("Below is the reqguested bills<br/><br/>"+sb.toString())))
+									.withSubject(new Content().withCharset("UTF-8").withData("Requested Bills")))
 							.withSource(From);
 					SendEmailResult response = client.sendEmail(req);
 					System.out.println("Email sent");
