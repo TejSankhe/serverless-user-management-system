@@ -19,6 +19,10 @@ public class MessageBills {
 	public void setBills(List<String> bills) {
 		this.bills = bills;
 	}
+
+	public MessageBills() {
+	}
+
 	public MessageBills(String emailId, List<String> bills) {
 		super();
 		this.emailId = emailId;
