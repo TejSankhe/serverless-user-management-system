@@ -16,19 +16,23 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClientBuilder;
 import com.amazonaws.services.simpleemail.model.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.UUID;
 
 public class SendEmails implements RequestHandler<SNSEvent, Object> {
 	static DynamoDB dynamoDB;
 
 	public Object handleRequest(SNSEvent request, Context context) {
-
-		String domain = System.getenv("DomainName");
-
-		final String From = "no-reply@" + domain;
-		final String To = request.getRecords().get(0).getSNS().getMessage();
-
 		try {
+		ObjectMapper objectMapper = new ObjectMapper();
+		String domain = System.getenv("DomainName");
+		String From = "no-reply@" + domain;
+		System.out.println(From);
+		final String message = request.getRecords().get(0).getSNS().getMessage();
+		MessageBills messageBills = objectMapper.readValue(message, MessageBills.class);
+		final String To = messageBills.getEmailId();
+
 			initDynamoDB();
 			Table dynamoDBTable = dynamoDB.getTable("sendEmailcsye6225DynamoDB");
 			long ttl = Instant.now().getEpochSecond() + 60 * 60;
