@@ -39,7 +39,7 @@ public class SendEmails implements RequestHandler<SNSEvent, Object> {
 			long now = Instant.now().getEpochSecond();
 			if (dynamoDBTable == null) {
 				System.out.println("Table not found");
-				
+
 			} else {
 				Item item = dynamoDBTable.getItem("EmailAddress", To);
 				if (item == null || (item != null && Long.parseLong(item.get("TTL").toString()) < now)) {
