@@ -22,7 +22,7 @@ public class SendEmails implements RequestHandler<SNSEvent, Object> {
 	static DynamoDB dynamoDB;
 
 	public Object handleRequest(SNSEvent request, Context context) {
-		
+
 		String domain = System.getenv("DomainName");
 
 		final String From = "no-reply@" + domain;
@@ -34,12 +34,12 @@ public class SendEmails implements RequestHandler<SNSEvent, Object> {
 			long ttl = Instant.now().getEpochSecond() + 60 * 60;
 			long now = Instant.now().getEpochSecond();
 			if (dynamoDBTable == null) {
-				context.getLogger().log("table not found");
+				System.out.println("Table not found");
 			} else {
 				Item item = dynamoDBTable.getItem("EmailAddress", To);
 				if (item == null || (item != null && Long.parseLong(item.get("TTL").toString()) < now)) {
 					Item newItem = new Item().withPrimaryKey("EmailAddress", To)
-											.withNumber("TTL", ttl);
+							.withNumber("TTL", ttl);
 
 					dynamoDBTable.putItem(newItem);
 
