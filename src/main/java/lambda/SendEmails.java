@@ -46,14 +46,17 @@ public class SendEmails implements RequestHandler<SNSEvent, Object> {
 							.withNumber("TTL", ttl);
 
 					dynamoDBTable.putItem(newItem);
-
+					StringBuilder sb = new StringBuilder();
+					for(String bill : messageBills.getBills()){
+						sb.append("<p><a href="+bill+">"+bill+"</a></p><br/>");
+					}
 					AmazonSimpleEmailService client = AmazonSimpleEmailServiceClientBuilder.standard()
 							.withRegion(Regions.US_EAST_1).build();
 					SendEmailRequest req = new SendEmailRequest().withDestination(new Destination().withToAddresses(To))
 							.withMessage(new Message()
 									.withBody(new Body().withHtml(new Content().withCharset("UTF-8")
 											.withData("Below is the reqguested bills<br/>")))
-									.withSubject(new Content().withCharset("UTF-8").withData("Requested Bills")))
+									.withSubject(new Content().withCharset("UTF-8").withData("Requested Bills<br/><br/>"+sb.toString())))
 							.withSource(From);
 					SendEmailResult response = client.sendEmail(req);
 					System.out.println("Email sent");
